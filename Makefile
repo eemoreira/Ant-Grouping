@@ -1,27 +1,35 @@
-# Makefile - debug build for simulator.cpp
+# Makefile - build for simulator.cpp
 CXX := g++
 SRC := simulator.cpp
-BIN := binary 
+BIN := binary
 
-# Flags de debug (ajuste se preferir)
-CXXFLAGS := -std=c++17 -g -O2 -Wall -Wextra -DLOCAL_DEBUG -fsanitize=address,undefined
+# Flags
+CXX_DEBUG_FLAGS   := -std=c++17 -g -O0 -Wall -Wextra -DLOCAL_DEBUG -fsanitize=address,undefined
+CXX_RELEASE_FLAGS := -std=c++17 -O2 -Wall -Wextra
 
-# Argumentos para a execução: make run RUNARGS="arg1 arg2"
+# Argumentos para a execução: make debug RUNARGS="..."
 RUNARGS ?=
 
-.PHONY: all build run clean
+.PHONY: all debug release clean
 
-all: build
+all: debug
 
-build: $(BIN)
+debug: $(SRC)
+	$(CXX) $(CXX_DEBUG_FLAGS) -o $(BIN) $(SRC)
+	@echo "Running ./$(BIN) $(RUNARGS)"
+	./$(BIN) $(RUNARGS)
 
-$(BIN): $(SRC)
-	$(CXX) $(CXXFLAGS) -o $@ $<
-
-run: build
+release: $(SRC)
+	$(CXX) $(CXX_RELEASE_FLAGS) -o $(BIN) $(SRC)
 	@echo "Running ./$(BIN) $(RUNARGS)"
 	./$(BIN) $(RUNARGS)
 
 clean:
 	-rm -f $(BIN)
 
+clean-res:
+	-rm -rf res/*.pgm \
+	rm -rf res/*.mp4
+
+plot:
+	python3 res/plot.py --anim

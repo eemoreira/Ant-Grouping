@@ -85,8 +85,12 @@ struct Ant {
         if (emp == 0) return false;
 
         // drop with 1 - (empty_cord.size()) / box_size prob
-        int rand = uniform(0, box_size - 1);
-        return rand >= emp;
+        bool ok = true;
+        for (int i = 0; i < 3; i++) {
+            int rand = uniform(0, box_size - 1);
+            ok &= rand >= emp;
+        }
+        return ok;
     }
 };
 
@@ -134,7 +138,7 @@ struct World {
     }
 
 #ifdef LOCAL_DEBUG
-    void print() {
+    void print(int step_number = -1) {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 if (item_map[i][j] && ant_map[i][j]) {
@@ -153,8 +157,37 @@ struct World {
         std::cerr << std::endl;
     }
 #else
-    void print() {}
+    void print(int step_number = -1) {
+        // escreve arquivo PGM binário (P5). Dimensões: M=width, N=height
+        std::string fname;
+        if (step_number >= 0) fname = "res/step_" + std::to_string(step_number) + ".pgm";
+        else fname = "res/step_last.pgm";
+
+        std::ofstream fout(fname, std::ios::binary);
+        if (!fout) return; // falha ao abrir arquivo -> não faz nada
+
+        // Header P5: width height maxval
+        fout << "P5\n" << M << " " << N << "\n255\n";
+
+        // Mapeamento de valores (um único byte por pixel):
+        // both (item + ant) -> 0   (preto)
+        // item only         ->  80 (escuro)
+        // ant only          -> 220 (claro)
+        // empty             -> 255 (branco)
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < M; ++j) {
+                unsigned char v;
+                if (item_map[i][j] && ant_map[i][j]) v = 0;
+                else if (item_map[i][j]) v = 0;
+                else if (ant_map[i][j]) v = 255;
+                else v = 255;
+                fout.write(reinterpret_cast<char*>(&v), 1);
+            }
+        }
+        fout.close();
+    }
 #endif
+
 
     void step() {
         for (Ant& ant : ants) {
@@ -193,7 +226,7 @@ struct World {
         for (int i = 0; i <= STEPS; i++) {
             step();
             if (i % print_every == 0) {
-                print();
+                print(i);
             }
         }
     }
@@ -203,7 +236,7 @@ signed main() {
     //World world(4, 4, 1, 1);
     //world.simulate(2, 1);
 
-    World world(10, 10, 10, 20);
-    world.simulate(1000000, 500000);
+    World world(40, 40, 200, 500);
+    world.simulate(1000000, 10000);
 }
 
