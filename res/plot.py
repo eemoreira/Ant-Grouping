@@ -53,9 +53,11 @@ def colorize(arr):
     mask_both = (arr == 0)
     mask_item = (arr == 80)
     mask_ant  = (arr == 220)
+    mask_carry = (arr == 180)
     out[mask_both] = np.array([0, 0, 0], dtype=np.uint8)
     out[mask_item] = np.array([40, 100, 200], dtype=np.uint8)   # blue
     out[mask_ant]  = np.array([220, 40, 40], dtype=np.uint8)    # red
+    out[mask_carry] = np.array([255, 0, 255], dtype=np.uint8)   # magenta
     return out
 
 def find_steps(directory):
