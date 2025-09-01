@@ -178,8 +178,8 @@ struct World {
             for (int j = 0; j < M; ++j) {
                 unsigned char v;
                 if (item_map[i][j] && ant_map[i][j]) v = 0;
-                else if (item_map[i][j]) v = 0;
-                else if (ant_map[i][j]) v = 255;
+                else if (item_map[i][j]) v = 80;
+                else if (ant_map[i][j]) v = 220;
                 else v = 255;
                 fout.write(reinterpret_cast<char*>(&v), 1);
             }
