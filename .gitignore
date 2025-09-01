@@ -2,4 +2,5 @@ binary
 *.o
 *.out
 *.pgm
+*.mp4
 venv

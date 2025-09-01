@@ -33,3 +33,6 @@ clean-res:
 
 plot:
 	python3 res/plot.py --anim
+
+work: clean-res release plot
+	-vlc res/animation.mp4
