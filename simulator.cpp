@@ -15,42 +15,25 @@ std::vector<Coordinate> random_coordinates(int WIDTH, int HEIGHT, int N) {
     assert(WIDTH > 0 && HEIGHT > 0);
     long long total = 1LL * WIDTH * HEIGHT;
     assert(N >= 0 && N <= total);
-
-    std::vector<int> xs(WIDTH), ys(HEIGHT);
-    iota(xs.begin(), xs.end(), 0);
-    iota(ys.begin(), ys.end(), 0);
-
-    shuffle(xs.begin(), xs.end(), rng);
-    shuffle(ys.begin(), ys.end(), rng);
-
-    std::vector<bool> used((size_t)total, false);
+    std::vector<bool> used(WIDTH*HEIGHT);
     std::vector<Coordinate> res;
-    res.reserve(N);
 
-    for (int xi = 0; xi < WIDTH && (int)res.size() < N; ++xi) {
-        int x = xs[xi];
-        int remaining = N - (int)res.size();
-        int max_take = std::min(HEIGHT, remaining);
-        int to_take = (max_take > 0) ? uniform(0, max_take) : 0;
-
-        int taken = 0;
-        for (int j = 0; j < HEIGHT && taken < to_take; ++j) {
-            int y = ys[j];
-            int id = y * WIDTH + x;
-            if (!used[id]) {
-                used[id] = true;
-                res.emplace_back(x, y);
-                ++taken;
-            }
-        }
+    int tries = 10*N;
+    while (tries-- && int(res.size()) < N) {
+        int x = uniform(0, WIDTH - 1);
+        int y = uniform(0, HEIGHT - 1);
+        int id = y * WIDTH + x;
+        if (used[id]) continue;
+        used[id] = true;
+        res.emplace_back(x, y);
     }
 
-    if ((int)res.size() < N) {
+    if (int(res.size()) < N) {
         for (int y = 0; y < HEIGHT && (int)res.size() < N; ++y) {
             for (int x = 0; x < WIDTH && (int)res.size() < N; ++x) {
                 int id = y * WIDTH + x;
                 if (!used[id]) {
-                    used[id] = 1;
+                    used[id] = true;
                     res.emplace_back(x, y);
                 }
             }
@@ -93,7 +76,7 @@ struct Ant {
     }
 };
 
-const int RADIUS = 4;
+const int RADIUS = 1;
 
 struct World {
     int N, M;
