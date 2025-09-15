@@ -1,5 +1,6 @@
 #pragma once
 #include "coordinate.hpp"
+#include "data.hpp"
 
 struct Ant {
     Coordinate cord;

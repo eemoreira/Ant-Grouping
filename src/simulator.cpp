@@ -2,14 +2,16 @@
 #include "random.hpp"
 #include "coordinate.hpp"
 #include "ant.hpp"
+#include "data.hpp"
 
-const int RADIUS = 3;
+const int RADIUS = 1;
 
 struct World {
     int N, M;
     int ant_number, item_number;
     std::vector<std::vector<int>> ant_map, item_map, carrying_map;
     std::vector<Ant> ants;
+    std::vector<Data> items;
 
     World(int _N, int _M, int _ants, int _items) 
         : N(_N), M(_M), ant_number(_ants), item_number(_items) {

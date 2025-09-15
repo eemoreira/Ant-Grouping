@@ -1,7 +1,7 @@
 # Makefile - build for simulator.cpp
 CXX := g++
-SRC := simulator.cpp
-BIN := binary
+SRC := src/simulator.cpp
+BIN := src/binary
 
 # Flags
 CXX_DEBUG_FLAGS   := -std=c++17 -g -O0 -Wall -Wextra -DLOCAL_DEBUG -fsanitize=address,undefined
