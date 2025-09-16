@@ -1,4 +1,9 @@
-#include<bits/stdc++.h>
+#include <vector>
+#include <queue>
+#include <iostream>
+#include <assert.h>
+#include <random>
+#include <chrono>
 #include "random.hpp"
 #include "coordinate.hpp"
 #include "ant.hpp"
@@ -9,16 +14,18 @@ const int RADIUS = 1;
 struct World {
     int N, M;
     int ant_number, item_number;
-    std::vector<std::vector<int>> ant_map, item_map, carrying_map;
+    std::vector<std::vector<int>> ant_map, filled_map, carrying_map;
+    std::vector<std::vector<Data>> data_map;
     std::vector<Ant> ants;
     std::vector<Data> items;
 
     World(int _N, int _M, int _ants, int _items) 
         : N(_N), M(_M), ant_number(_ants), item_number(_items) {
 
-        item_map.assign(N, std::vector<int>(M, false)); 
+        filled_map.assign(N, std::vector<int>(M, false)); 
         ant_map.assign(N, std::vector<int>(M, 0)); 
         carrying_map.assign(N, std::vector<int>(M, 0)); 
+        data_map.assign(N, std::vector<Data>(M, Data())); 
         ants.reserve(ant_number);
 
         for (Coordinate cord : random_coordinates(N, M, ant_number)) {
@@ -26,36 +33,56 @@ struct World {
             ants.emplace_back(cord, RADIUS);
         }
         for (Coordinate cord : random_coordinates(N, M, item_number)) {
-            item_map[cord.x][cord.y] = true;
+            int a = uniform(1,20);
+            if(uniform(1,2) == 2) a *= -1;
+            int b = uniform(1,20);
+            if(uniform(1,2) == 2) b *= -1;
+            int g = 0;
+            if(a > 0 && b > 0) {
+                g = 1;
+            }
+            else if(a < 0 && b > 0) {
+                g = 2;
+            }
+            else if(a < 0 && b < 0) {
+                g = 3;
+            }
+            else if(a > 0 && b < 0) {
+                g = 4;
+            }
+            filled_map[cord.x][cord.y] = true;
+            data_map[cord.x][cord.y] = Data(a,b,g);
         }
         print();
     }
 
-    Coordinate random_step(int x, int y, int BOUND_WIDTH, int BOUND_HEIGHT) {
+    Coordinate wrap(int x, int y) {
         int _x = x, _y = y;
-        _x += uniform(-1, 1);
-        _x = _x < 0 ? BOUND_WIDTH - 1 : _x;;
-        _x = _x >= BOUND_WIDTH ? 0 : _x;
+        _x = _x < 0 ? N - 1 : _x;;
+        _x = _x >= N ? 0 : _x;
 
-        _y += uniform(-1 , 1);
-        _y = _y < 0 ? BOUND_HEIGHT - 1 : _y;
-        _y = _y >= BOUND_HEIGHT ? 0 : _y;
+        _y = _y < 0 ? M - 1 : _y;
+        _y = _y >= M ? 0 : _y;
 
         return Coordinate(_x, _y);
     }
 
-    bool valid(int i, int j) {
-        return i >= 0 && i < N && j >= 0 && j < M;
+    Coordinate random_step(int x, int y) {
+        int _x = x, _y = y;
+        _x += uniform(-1, 1);
+        _y += uniform(-1 , 1);
+
+        return wrap(_x, _y);
     }
 
 #ifdef LOCAL_DEBUG
     void print(int step_number = -1) {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
-                if (item_map[i][j] && ant_map[i][j]) {
-                    std::cerr << '#';
-                } else if (item_map[i][j]) {
-                    std::cerr << '#';
+                if (filled_map[i][j] && ant_map[i][j]) {
+                    std::cerr << data_map[i][j].group;
+                } else if (filled_map[i][j]) {
+                    std::cerr << data_map[i][j].group;
                 } else if (ant_map[i][j]) {
                     std::cerr << '.';
                 } else {
@@ -87,14 +114,14 @@ struct World {
         // ant only          -> 220 (claro)
         // empty             -> 255 (branco)
 
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < M; ++j) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
                 unsigned char v;
 
                 if (carrying_map[i][j]) assert(ant_map[i][j]);
 
-                if (item_map[i][j] && ant_map[i][j]) v = 0;
-                else if (item_map[i][j]) v = 80;
+                if (filled_map[i][j] && ant_map[i][j]) v = 0;
+                else if (filled_map[i][j]) v = 80;
                 else if (carrying_map[i][j]) v = 180;
                 else if (ant_map[i][j]) v = 220;
                 else v = 255;
@@ -106,32 +133,34 @@ struct World {
 #endif
 
     void do_action(Ant& ant) {
-        int cell_cnt = 0, filled_cnt = 0;
+        int cell_cnt = 0;
+        std::vector<Data> v;
         for (int i = -ant.radius; i <= ant.radius; i++) {
             for (int j = -ant.radius; j <= ant.radius; j++) {
-                int xx = ant.cord.x + i, yy = ant.cord.y + j;
-                if (valid(xx, yy)) {
-                    cell_cnt++;
-                    if (item_map[xx][yy]) {
-                        filled_cnt++;
-                    }
+                Coordinate cur = wrap(ant.cord.x + i, ant.cord.y + j);
+                cell_cnt++;
+                if (filled_map[cur.x][cur.y]) {
+                    v.emplace_back(data_map[cur.x][cur.y]);
                 }
             }
         }
 
-        if (ant.action(filled_cnt, cell_cnt)) {
-            if (ant.carrying ^ item_map[ant.cord.x][ant.cord.y]) {
-                item_map[ant.cord.x][ant.cord.y] ^= 1;
+        if (ant.action(v, cell_cnt)) {
+            if (ant.carrying ^ filled_map[ant.cord.x][ant.cord.y]) {
+                filled_map[ant.cord.x][ant.cord.y] ^= 1;
                 ant.carrying ^= 1;
-                if (ant.carrying) carrying_map[ant.cord.x][ant.cord.y] += 1;
-                else carrying_map[ant.cord.x][ant.cord.y] -= 1;
+                if (ant.carrying) {
+                    carrying_map[ant.cord.x][ant.cord.y] += 1;
+                }
+                else {
+                    carrying_map[ant.cord.x][ant.cord.y] -= 1;
+                }
             }
 
         }
     }
 
     void step() {
-
         for (Ant& ant : ants) {
             do_action(ant);
         }
@@ -142,7 +171,7 @@ struct World {
             if (ant.carrying) carrying_map[x][y] -= 1;
             ant_map[x][y] -= 1;
 
-            ant.cord = random_step(x, y, N, M);
+            ant.cord = random_step(x, y);
             x = ant.cord.x, y = ant.cord.y;
 
             ant_map[x][y] += 1;
@@ -160,16 +189,16 @@ struct World {
             Coordinate now = q.front();
             q.pop();
             vis[now.x][now.y] = true;
-            if (!item_map[now.x][now.y]) {
+            if (!filled_map[now.x][now.y]) {
                 to.emplace_back(now);
                 continue;
             }
             for (int i = -RADIUS; i <= RADIUS; i++) {
                 for (int j = -RADIUS; j <= RADIUS; j++) {
-                    int x = now.x + i, y = now.y + j;
-                    if (valid(x, y) && !vis[x][y]) {
-                        vis[x][y] = true;
-                        q.emplace(x, y);
+                    Coordinate cur = wrap(now.x + i, now.y + j);
+                    if (!vis[cur.x][cur.y]) {
+                        vis[cur.x][cur.y] = true;
+                        q.emplace(cur.x, cur.y);
                     }
                 }
             }
@@ -186,7 +215,7 @@ struct World {
                 ant_map[ant.cord.x][ant.cord.y] -= 1;
                 carrying_map[ant.cord.x][ant.cord.y] -= 1;
                 ant_map[now.x][now.y] += 1;
-                item_map[now.x][now.y] += 1;
+                filled_map[now.x][now.y] = 1;
             }
         }
     }
