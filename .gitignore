@@ -3,5 +3,4 @@ binary
 *.out
 *.pgm
 *.mp4
-.*.un~
 venv
