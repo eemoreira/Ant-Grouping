@@ -1,9 +1,4 @@
-#include <vector>
-#include <queue>
-#include <iostream>
-#include <assert.h>
-#include <random>
-#include <chrono>
+#include <bits/stdc++.h>
 #include "random.hpp"
 #include "coordinate.hpp"
 #include "ant.hpp"
@@ -17,7 +12,6 @@ struct World {
     std::vector<std::vector<int>> ant_map, filled_map, carrying_map;
     std::vector<std::vector<Data>> data_map;
     std::vector<Ant> ants;
-    std::vector<Data> items;
 
     World(int _N, int _M, int _ants, int _items) 
         : N(_N), M(_M), ant_number(_ants), item_number(_items) {
@@ -151,9 +145,12 @@ struct World {
                 ant.carrying ^= 1;
                 if (ant.carrying) {
                     carrying_map[ant.cord.x][ant.cord.y] += 1;
+                    data_map[ant.cord.x][ant.cord.y] = ant.data;
                 }
                 else {
                     carrying_map[ant.cord.x][ant.cord.y] -= 1;
+                    ant.data = data_map[ant.cord.x][ant.cord.y];
+                    data_map[ant.cord.x][ant.cord.y] = Data();
                 }
             }
 
