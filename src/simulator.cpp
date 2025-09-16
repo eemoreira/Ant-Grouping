@@ -131,6 +131,7 @@ struct World {
         std::vector<Data> v;
         for (int i = -ant.radius; i <= ant.radius; i++) {
             for (int j = -ant.radius; j <= ant.radius; j++) {
+                if(abs(i) + abs(j) > ant.radius) continue;
                 Coordinate cur = wrap(ant.cord.x + i, ant.cord.y + j);
                 cell_cnt++;
                 if (filled_map[cur.x][cur.y]) {
@@ -145,12 +146,12 @@ struct World {
                 ant.carrying ^= 1;
                 if (ant.carrying) {
                     carrying_map[ant.cord.x][ant.cord.y] += 1;
-                    data_map[ant.cord.x][ant.cord.y] = ant.data;
+                    ant.data = data_map[ant.cord.x][ant.cord.y];
+                    data_map[ant.cord.x][ant.cord.y] = Data();
                 }
                 else {
                     carrying_map[ant.cord.x][ant.cord.y] -= 1;
-                    ant.data = data_map[ant.cord.x][ant.cord.y];
-                    data_map[ant.cord.x][ant.cord.y] = Data();
+                    data_map[ant.cord.x][ant.cord.y] = ant.data;
                 }
             }
 
@@ -192,6 +193,7 @@ struct World {
             }
             for (int i = -RADIUS; i <= RADIUS; i++) {
                 for (int j = -RADIUS; j <= RADIUS; j++) {
+                    if(abs(i) + abs(j) > RADIUS) continue;
                     Coordinate cur = wrap(now.x + i, now.y + j);
                     if (!vis[cur.x][cur.y]) {
                         vis[cur.x][cur.y] = true;
@@ -236,7 +238,7 @@ signed main() {
     World world(40, 40, 100, 500);
     world.simulate(100000, 1000);
 
-    //World world(5, 5, 4, 10);
-    //world.simulate(10000, 100);
+    //World world(15, 15, 20, 50);
+    //world.simulate(100000, 1000);
 }
 
