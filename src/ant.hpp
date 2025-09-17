@@ -1,10 +1,11 @@
 #pragma once
 #include "coordinate.hpp"
 #include "data.hpp"
+#include <math.h>
 
-const double ALPHA = 8;
+const double ALPHA = 10;
 const double K1 = 0.1;
-const double K2 = 1;
+const double K2 = 0.3;
 
 #define sq(x) ((x)*(x))
 
@@ -15,48 +16,47 @@ struct Ant {
     Data data;
     Ant(Coordinate _cord, int _vision_radius) : cord(_cord), radius(_vision_radius) {
         carrying = false;
+        data = Data();
     }
 
-    bool action(std::vector<Data>&v, int box_size) {
-        if (!carrying) return pickup(v, box_size);
+    bool action(std::vector<Data>&v, Data _data, int box_size) {
+        if (!carrying) return pickup(v, _data);
         return drop(v, box_size);
     }
 
-    bool pickup(const std::vector<Data>& v, int box_size) {
-        if (v.size() == 0) return false;
-
+    double F(const std::vector<Data>& v, Data data_to_compare) {
         double sum = 0;
+
         for(const Data& d : v) {
-            sum += 1.0 - data.dist(d)/ALPHA;
+            //std::cerr << std::setprecision(10) << data_to_compare.dist(d) << std::endl;
+            sum += std::max<double>(0, 1.0 - data_to_compare.dist(d)/ALPHA);
         }
 
-        double ssq = sq(v.size());
+        double ssq = v.size();
+        return std::max<double>(0, 1.0/ssq * sum);
+    }
 
-        double f = 1.0/ssq * sum;
-        if(f <= 0) f = 0;
+    bool pickup(const std::vector<Data>& v, Data data_to_take) {
+        if (int(v.size()) == 0) return false;
 
-        double pp = sq(K1/(K1 + f));
 
+        double f = F(v, data_to_take);
+        double pp = sq(K1 / (K1 + f));
+
+
+        //std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", pickup prob = " << pp << std::endl;
         // pickup with pp prob
-        return get_random() <= pp;
+        return get_random() < pp;
     }
 
     bool drop(std::vector<Data>&v, int box_size) {
-        if (box_size - v.size() == 0) return false;
+        if (box_size - int(v.size()) == 0) return false;
 
-        double sum = 0;
-        for(const Data& d : v) {
-            sum += 1.0 - data.dist(d)/ALPHA;
-        }
+        double f = F(v, data);
+        double pd = sq(f / (K2 + f));
 
-        double ssq = sq(v.size());
-
-        double f = 1.0/ssq * sum;
-        if(f <= 0) f = 0;
-
-        double pd = sq(f/(K2 + f));
-
+        //std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", drop prob = " << pd << std::endl;
         // drop with pd prob
-        return get_random() <= pd;
+        return get_random() < pd;
     }
 };

@@ -4,7 +4,7 @@
 #include "ant.hpp"
 #include "data.hpp"
 
-const int RADIUS = 1;
+const int RADIUS = 3;
 
 struct World {
     int N, M;
@@ -52,7 +52,7 @@ struct World {
 
     Coordinate wrap(int x, int y) {
         int _x = x, _y = y;
-        _x = _x < 0 ? N - 1 : _x;;
+        _x = _x < 0 ? N - 1 : _x;
         _x = _x >= N ? 0 : _x;
 
         _y = _y < 0 ? M - 1 : _y;
@@ -64,7 +64,7 @@ struct World {
     Coordinate random_step(int x, int y) {
         int _x = x, _y = y;
         _x += uniform(-1, 1);
-        _y += uniform(-1 , 1);
+        _y += uniform(-1, 1);
 
         return wrap(_x, _y);
     }
@@ -98,31 +98,45 @@ struct World {
         std::ofstream fout(fname, std::ios::binary);
         if (!fout) return; // falha ao abrir arquivo -> não faz nada
 
-        // Header P5: width height maxval
-        fout << "P5\n" << M << " " << N << "\n255\n";
+        // Header P6: width height maxval
+        fout << "P6\n" << M << " " << N << "\n255\n";
 
-        uint8_t Color[5] = {0, 80, 180, 220, 255};
-        // Mapeamento de valores (um único byte por pixel):
-        // data 1            -> 0   
-        // data 2            -> 80  
-        // data 3            -> 180 
-        // data 4            -> 220 
-        // empty or ant      -> 255  
+        // Paleta: index corresponde ao seu esquema original
+        // 0 -> ant (sem carregar)
+        // 1 -> data1
+        // 2 -> data2
+        // 3 -> data3
+        // 4 -> data4
+        // 5 -> empty
+        std::vector<std::array<uint8_t,3>> palette = {
+            {  0,   0,   0}, // 0 ant   -> quase preto
+            {239,  71, 111}, // 1 data1 -> rosa/vermelho
+            {255, 209, 102}, // 2 data2 -> amarelo quente
+            {  6, 214, 160}, // 3 data3 -> verde água
+            { 17, 138, 178}, // 4 data4 -> azul petróleo
+            {255, 255, 255}  // 5 empty -> cinza claro
+        };
+        // cor para formiga carregando (destaca)
+        std::array<uint8_t,3> carrier_color = {255, 0, 0}; // vermelho vivo
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
-                uint8_t v;
+                const std::array<uint8_t,3>* colPtr = nullptr;
 
                 if (carrying_map[i][j]) assert(ant_map[i][j]);
 
                 if (filled_map[i][j]) {
                     int group = data_map[i][j].group;
-                    v = Color[group - 1];
+                    // garantir índice válido (se necessário, clipe)
+                    colPtr = &palette[group];
+                } else if (ant_map[i][j]) {
+                    if (carrying_map[i][j]) colPtr = &carrier_color;
+                    else colPtr = &palette[0];
                 } else {
-                    v = 255;
+                    colPtr = &palette[5];
                 }
 
-                fout.write(reinterpret_cast<char*>(&v), 1);
+                fout.write(reinterpret_cast<const char*>(colPtr->data()), 3);
             }
         }
         fout.close();
@@ -134,7 +148,7 @@ struct World {
         std::vector<Data> v;
         for (int i = -ant.radius; i <= ant.radius; i++) {
             for (int j = -ant.radius; j <= ant.radius; j++) {
-                if(abs(i) + abs(j) > ant.radius) continue;
+                //if (abs(i) + abs(j) > ant.radius) continue;
                 Coordinate cur = wrap(ant.cord.x + i, ant.cord.y + j);
                 cell_cnt++;
                 if (filled_map[cur.x][cur.y]) {
@@ -143,21 +157,20 @@ struct World {
             }
         }
 
-        if (ant.action(v, cell_cnt)) {
-            if (ant.carrying ^ filled_map[ant.cord.x][ant.cord.y]) {
-                filled_map[ant.cord.x][ant.cord.y] ^= 1;
-                ant.carrying ^= 1;
-                if (ant.carrying) {
-                    carrying_map[ant.cord.x][ant.cord.y] += 1;
-                    ant.data = data_map[ant.cord.x][ant.cord.y];
-                    data_map[ant.cord.x][ant.cord.y] = Data();
-                }
-                else {
-                    carrying_map[ant.cord.x][ant.cord.y] -= 1;
-                    data_map[ant.cord.x][ant.cord.y] = ant.data;
-                }
+        Data data = data_map[ant.cord.x][ant.cord.y];
+        if (ant.carrying == filled_map[ant.cord.x][ant.cord.y]) return;
+        if (ant.action(v, data, cell_cnt)) {
+            filled_map[ant.cord.x][ant.cord.y] ^= 1;
+            ant.carrying ^= 1;
+            if (ant.carrying) {
+                carrying_map[ant.cord.x][ant.cord.y] += 1;
+                ant.data = data;
+                data_map[ant.cord.x][ant.cord.y] = Data();
             }
-
+            else {
+                carrying_map[ant.cord.x][ant.cord.y] -= 1;
+                data_map[ant.cord.x][ant.cord.y] = ant.data;
+            }
         }
     }
 
@@ -196,7 +209,7 @@ struct World {
             }
             for (int i = -RADIUS; i <= RADIUS; i++) {
                 for (int j = -RADIUS; j <= RADIUS; j++) {
-                    if(abs(i) + abs(j) > RADIUS) continue;
+                    //if (abs(i) + abs(j) > RADIUS) continue;
                     Coordinate cur = wrap(now.x + i, now.y + j);
                     if (!vis[cur.x][cur.y]) {
                         vis[cur.x][cur.y] = true;
@@ -235,8 +248,8 @@ struct World {
 };
 
 signed main() {
-    //World world(4, 4, 1, 1);
-    //world.simulate(2, 1);
+    //World world(10, 10, 1, 50);
+    //world.simulate(10, 1);
 
     World world(40, 40, 100, 500);
     world.simulate(100000, 1000);
