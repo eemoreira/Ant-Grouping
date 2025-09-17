@@ -101,24 +101,27 @@ struct World {
         // Header P5: width height maxval
         fout << "P5\n" << M << " " << N << "\n255\n";
 
+        uint8_t Color[5] = {0, 80, 180, 220, 255};
         // Mapeamento de valores (um único byte por pixel):
-        // both (item + ant) -> 0   (preto)
-        // item only         ->  80 (escuro)
-        // ant carrying      -> 180
-        // ant only          -> 220 (claro)
-        // empty             -> 255 (branco)
+        // data 1            -> 0   
+        // data 2            -> 80  
+        // data 3            -> 180 
+        // data 4            -> 220 
+        // empty or ant      -> 255  
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
-                unsigned char v;
+                uint8_t v;
 
                 if (carrying_map[i][j]) assert(ant_map[i][j]);
 
-                if (filled_map[i][j] && ant_map[i][j]) v = 0;
-                else if (filled_map[i][j]) v = 80;
-                else if (carrying_map[i][j]) v = 180;
-                else if (ant_map[i][j]) v = 220;
-                else v = 255;
+                if (filled_map[i][j]) {
+                    int group = data_map[i][j].group;
+                    v = Color[group - 1];
+                } else {
+                    v = 255;
+                }
+
                 fout.write(reinterpret_cast<char*>(&v), 1);
             }
         }
