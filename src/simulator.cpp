@@ -4,7 +4,40 @@
 #include "ant.hpp"
 #include "data.hpp"
 
-const int RADIUS = 3;
+std::string normalizeNumber(const std::string &s) {
+    std::string out = s;
+    std::replace(out.begin(), out.end(), ',', '.');
+    return out;
+}
+
+std::vector<Data> readDataFile(const std::string &filename) {
+    std::ifstream file(filename);
+    std::vector<Data> dataset;
+
+    if (!file.is_open()) {
+        throw std::runtime_error("could not open file: " + filename);
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue;
+
+        std::stringstream ss(line);
+        std::string sx, sy, sg;
+
+        if (!(ss >> sx >> sy >> sg)) continue;
+
+        double x = std::stod(normalizeNumber(sx));
+        double y = std::stod(normalizeNumber(sy));
+        int group = std::stoi(sg);
+
+        dataset.emplace_back(x, y, group);
+    }
+
+    return dataset;
+}
+
+const int RADIUS = 1;
 
 struct World {
     int N, M;
@@ -13,8 +46,8 @@ struct World {
     std::vector<std::vector<Data>> data_map;
     std::vector<Ant> ants;
 
-    World(int _N, int _M, int _ants, int _items) 
-        : N(_N), M(_M), ant_number(_ants), item_number(_items) {
+    World(int _N, int _M, int _ants, std::vector<Data> items) 
+        : N(_N), M(_M), ant_number(_ants), item_number(items.size()) {
 
         filled_map.assign(N, std::vector<int>(M, false)); 
         ant_map.assign(N, std::vector<int>(M, 0)); 
@@ -26,26 +59,10 @@ struct World {
             ant_map[cord.x][cord.y] += 1;
             ants.emplace_back(cord, RADIUS);
         }
+        int i = 0;
         for (Coordinate cord : random_coordinates(N, M, item_number)) {
-            int a = uniform(1,20);
-            if(uniform(1,2) == 2) a *= -1;
-            int b = uniform(1,20);
-            if(uniform(1,2) == 2) b *= -1;
-            int g = 0;
-            if(a > 0 && b > 0) {
-                g = 1;
-            }
-            else if(a < 0 && b > 0) {
-                g = 2;
-            }
-            else if(a < 0 && b < 0) {
-                g = 3;
-            }
-            else if(a > 0 && b < 0) {
-                g = 4;
-            }
             filled_map[cord.x][cord.y] = true;
-            data_map[cord.x][cord.y] = Data(a,b,g);
+            data_map[cord.x][cord.y] = items[i++];
         }
         print();
     }
@@ -251,8 +268,8 @@ signed main() {
     //World world(10, 10, 1, 50);
     //world.simulate(10, 1);
 
-    World world(40, 40, 100, 500);
-    world.simulate(100000, 1000);
+    World world(50, 50, 80, readDataFile("res/Square1-DataSet-400itens.txt"));
+    world.simulate(1000000, 1000);
 
     //World world(15, 15, 20, 50);
     //world.simulate(100000, 1000);

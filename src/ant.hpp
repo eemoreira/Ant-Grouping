@@ -3,9 +3,9 @@
 #include "data.hpp"
 #include <math.h>
 
-const double ALPHA = 10;
-const double K1 = 0.1;
-const double K2 = 0.3;
+const double ALPHA = 56;
+const double K1 = 0.3;
+const double K2 = 0.4;
 
 #define sq(x) ((x)*(x))
 
@@ -29,10 +29,10 @@ struct Ant {
 
         for(const Data& d : v) {
             //std::cerr << std::setprecision(10) << data_to_compare.dist(d) << std::endl;
-            sum += std::max<double>(0, 1.0 - data_to_compare.dist(d)/ALPHA);
+            sum += 1.0 - data_to_compare.dist(d)/ALPHA;
         }
 
-        double ssq = v.size();
+        double ssq = sq(v.size());
         return std::max<double>(0, 1.0/ssq * sum);
     }
 
@@ -44,7 +44,7 @@ struct Ant {
         double pp = sq(K1 / (K1 + f));
 
 
-        //std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", pickup prob = " << pp << std::endl;
+        std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", pickup prob = " << pp << std::endl;
         // pickup with pp prob
         return get_random() < pp;
     }
@@ -55,7 +55,7 @@ struct Ant {
         double f = F(v, data);
         double pd = sq(f / (K2 + f));
 
-        //std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", drop prob = " << pd << std::endl;
+        std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", drop prob = " << pd << std::endl;
         // drop with pd prob
         return get_random() < pd;
     }
