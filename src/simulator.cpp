@@ -107,18 +107,16 @@ struct World {
     }
 #else
     void print(int step_number = -1) {
-        // escreve arquivo PGM binário (P5). Dimensões: M=width, N=height
         std::string fname;
         if (step_number >= 0) fname = "res/step_" + std::to_string(step_number) + ".pgm";
         else fname = "res/step_last.pgm";
 
         std::ofstream fout(fname, std::ios::binary);
-        if (!fout) return; // falha ao abrir arquivo -> não faz nada
+        if (!fout) return;
 
         // Header P6: width height maxval
         fout << "P6\n" << M << " " << N << "\n255\n";
 
-        // Paleta: index corresponde ao seu esquema original
         // 0 -> ant (sem carregar)
         // 1 -> data1
         // 2 -> data2
@@ -133,9 +131,8 @@ struct World {
             { 17, 138, 178}, // 4 data4 -> azul petróleo
             {255, 255, 255}  // 5 empty -> cinza claro
         };
-        // cor para formiga carregando (destaca)
-        std::array<uint8_t,3> carrier_color = {255, 0, 0}; // vermelho vivo
 
+        std::array<uint8_t,3> carrier_color = {255, 0, 0}; // vermelho vivo
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 const std::array<uint8_t,3>* colPtr = nullptr;
@@ -161,30 +158,36 @@ struct World {
 #endif
 
     void do_action(Ant& ant) {
-        int cell_cnt = 0;
+        // formiga carregando nao pode pegar item
+        // formiga nao carregando so pode pegar o item se estiver na cordenada dela
+        if (ant.carrying == filled_map[ant.cord.x][ant.cord.y]) return;
+
         std::vector<Data> v;
         for (int i = -ant.radius; i <= ant.radius; i++) {
             for (int j = -ant.radius; j <= ant.radius; j++) {
-                //if (abs(i) + abs(j) > ant.radius) continue;
                 Coordinate cur = wrap(ant.cord.x + i, ant.cord.y + j);
-                cell_cnt++;
+                const Data data = data_map[cur.x][cur.y];
                 if (filled_map[cur.x][cur.y]) {
-                    v.emplace_back(data_map[cur.x][cur.y]);
+                    assert(data.group != 0);
+                    v.emplace_back(data);
+                } else {
+                    assert(data.group == 0);
                 }
             }
         }
 
-        Data data = data_map[ant.cord.x][ant.cord.y];
-        if (ant.carrying == filled_map[ant.cord.x][ant.cord.y]) return;
-        if (ant.action(v, data, cell_cnt)) {
+        const Data data = data_map[ant.cord.x][ant.cord.y];
+        if (ant.action(v, data)) {
             filled_map[ant.cord.x][ant.cord.y] ^= 1;
             ant.carrying ^= 1;
             if (ant.carrying) {
                 carrying_map[ant.cord.x][ant.cord.y] += 1;
+                assert(data.group != 0);
                 ant.data = data;
                 data_map[ant.cord.x][ant.cord.y] = Data();
             }
             else {
+                assert(data.group == 0);
                 carrying_map[ant.cord.x][ant.cord.y] -= 1;
                 data_map[ant.cord.x][ant.cord.y] = ant.data;
             }
@@ -265,11 +268,9 @@ struct World {
 };
 
 signed main() {
-    //World world(10, 10, 1, 50);
-    //world.simulate(10, 1);
 
-    World world(50, 50, 80, readDataFile("res/Square1-DataSet-400itens.txt"));
-    world.simulate(1000000, 1000);
+    World world(64, 64, 150, readDataFile("res/Square1-DataSet-400itens.txt"));
+    world.simulate(2000000, 10000);
 
     //World world(15, 15, 20, 50);
     //world.simulate(100000, 1000);

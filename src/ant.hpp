@@ -3,11 +3,17 @@
 #include "data.hpp"
 #include <math.h>
 
-const double ALPHA = 56;
+const double ALPHA = 11.8029;
+const double SIGMA = 2;
 const double K1 = 0.3;
-const double K2 = 0.4;
+const double K2 = 0.6;
 
 #define sq(x) ((x)*(x))
+
+double gaussian_sim(double dist, double sigma) {
+    // similarity in [0,1]
+    return std::exp(- sq(dist) / (2.0 * sq(sigma)));
+}
 
 struct Ant {
     Coordinate cord;
@@ -19,9 +25,9 @@ struct Ant {
         data = Data();
     }
 
-    bool action(std::vector<Data>&v, Data _data, int box_size) {
+    bool action(std::vector<Data>&v, Data _data) {
         if (!carrying) return pickup(v, _data);
-        return drop(v, box_size);
+        return drop(v);
     }
 
     double F(const std::vector<Data>& v, Data data_to_compare) {
@@ -37,26 +43,34 @@ struct Ant {
     }
 
     bool pickup(const std::vector<Data>& v, Data data_to_take) {
-        if (int(v.size()) == 0) return false;
 
 
         double f = F(v, data_to_take);
+        //double pp = sq(1 - (double)v.size() / 8.0);
+
         double pp = sq(K1 / (K1 + f));
-
-
-        std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", pickup prob = " << pp << std::endl;
+        //std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", pickup prob = " << pp << std::endl;
         // pickup with pp prob
-        return get_random() < pp;
+        bool pick = get_random() < pp;
+        //if (pick) {
+        //    std::cerr << std::setprecision(10) << std::fixed << "v.size() = " << v.size() << ", pickup prob = " << pp << std::endl;
+        //}
+        return pick;
     }
 
-    bool drop(std::vector<Data>&v, int box_size) {
-        if (box_size - int(v.size()) == 0) return false;
+    bool drop(std::vector<Data>&v) {
 
         double f = F(v, data);
-        double pd = sq(f / (K2 + f));
 
-        std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", drop prob = " << pd << std::endl;
+        double pd = sq(f / (K2 + f));
+        //double pd = sq((double)v.size() / 8.0);
+
+        //std::cerr << std::setprecision(10) << std::fixed << "f = " << f << ", drop prob = " << pd << std::endl;
         // drop with pd prob
-        return get_random() < pd;
+        bool dp = get_random() < pd;
+        //if (dp) {
+        //    std::cerr << std::setprecision(10) << std::fixed << "v.size() = " << v.size() << ", drop prob = " << pd << std::endl;
+        //}
+        return dp;
     }
 };
