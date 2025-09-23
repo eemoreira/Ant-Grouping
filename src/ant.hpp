@@ -3,17 +3,11 @@
 #include "data.hpp"
 #include <math.h>
 
-const double ALPHA = 11.8029;
-const double SIGMA = 2;
-const double K1 = 0.3;
-const double K2 = 0.6;
+const double ALPHA = 15.8029;
+const double K1 = 0.95;
+const double K2 = 0.03;
 
 #define sq(x) ((x)*(x))
-
-double gaussian_sim(double dist, double sigma) {
-    // similarity in [0,1]
-    return std::exp(- sq(dist) / (2.0 * sq(sigma)));
-}
 
 struct Ant {
     Coordinate cord;
@@ -35,10 +29,10 @@ struct Ant {
 
         for(const Data& d : v) {
             //std::cerr << std::setprecision(10) << data_to_compare.dist(d) << std::endl;
-            sum += 1.0 - data_to_compare.dist(d)/ALPHA;
+            sum += std::max(0.0, 1.0 - data_to_compare.dist(d)/ALPHA);
         }
 
-        double ssq = sq(v.size());
+        double ssq = 9*9;
         return std::max<double>(0, 1.0/ssq * sum);
     }
 

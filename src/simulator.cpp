@@ -37,6 +37,27 @@ std::vector<Data> readDataFile(const std::string &filename) {
     return dataset;
 }
 
+void normalizeData(std::vector<Data>& dataset) {
+    Data mean, var, st;
+    for (Data data : dataset) {
+        mean.x += data.x;
+        mean.y += data.y;
+    }
+    mean.x /= dataset.size();
+    mean.y /= dataset.size();
+    for (Data data : dataset) {
+        var.x += (data.x - mean.x) * (data.x - mean.x);
+        var.y += (data.y - mean.y) * (data.y - mean.y);
+    }
+    st.x = std::sqrt(var.x / dataset.size());
+    st.y = std::sqrt(var.y / dataset.size());
+
+    for (Data& data : dataset) {
+        data.x = (data.x - mean.x) / st.x;
+        data.y = (data.y - mean.y) / st.y;
+    }
+}
+
 const int RADIUS = 1;
 
 struct World {
@@ -124,12 +145,12 @@ struct World {
         // 4 -> data4
         // 5 -> empty
         std::vector<std::array<uint8_t,3>> palette = {
-            {  0,   0,   0}, // 0 ant   -> quase preto
+            {  0,   0,   0}, // 0 ant   -> preto
             {239,  71, 111}, // 1 data1 -> rosa/vermelho
             {255, 209, 102}, // 2 data2 -> amarelo quente
             {  6, 214, 160}, // 3 data3 -> verde água
             { 17, 138, 178}, // 4 data4 -> azul petróleo
-            {255, 255, 255}  // 5 empty -> cinza claro
+            {255, 255, 255}  // 5 empty -> branco
         };
 
         std::array<uint8_t,3> carrier_color = {255, 0, 0}; // vermelho vivo
@@ -229,7 +250,7 @@ struct World {
             }
             for (int i = -RADIUS; i <= RADIUS; i++) {
                 for (int j = -RADIUS; j <= RADIUS; j++) {
-                    //if (abs(i) + abs(j) > RADIUS) continue;
+                    if (abs(i) + abs(j) > RADIUS) continue;
                     Coordinate cur = wrap(now.x + i, now.y + j);
                     if (!vis[cur.x][cur.y]) {
                         vis[cur.x][cur.y] = true;
@@ -269,8 +290,10 @@ struct World {
 
 signed main() {
 
-    World world(64, 64, 150, readDataFile("res/Square1-DataSet-400itens.txt"));
-    world.simulate(2000000, 10000);
+    std::vector<Data> dataset = readDataFile("res/Square1-DataSet-400itens.txt");
+    //normalizeData(dataset);
+    World world(64, 64, 150, dataset);
+    world.simulate(20000000, 100000);
 
     //World world(15, 15, 20, 50);
     //world.simulate(100000, 1000);
