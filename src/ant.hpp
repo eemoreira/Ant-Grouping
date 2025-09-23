@@ -3,8 +3,8 @@
 #include "data.hpp"
 #include <math.h>
 
-const double ALPHA = 15.8029;
-const double K1 = 0.95;
+const double ALPHA = 35.8029;
+const double K1 = 0.03;
 const double K2 = 0.03;
 
 #define sq(x) ((x)*(x))
@@ -28,11 +28,11 @@ struct Ant {
         double sum = 0;
 
         for(const Data& d : v) {
-            //std::cerr << std::setprecision(10) << data_to_compare.dist(d) << std::endl;
+            //std::cerr << std::setprecision(10) << data_to_compare.dist(d)/ALPHA << std::endl;
             sum += std::max(0.0, 1.0 - data_to_compare.dist(d)/ALPHA);
         }
 
-        double ssq = 9*9;
+        double ssq = sq(8);
         return std::max<double>(0, 1.0/ssq * sum);
     }
 

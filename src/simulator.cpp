@@ -153,7 +153,7 @@ struct World {
             {255, 255, 255}  // 5 empty -> branco
         };
 
-        std::array<uint8_t,3> carrier_color = {255, 0, 0}; // vermelho vivo
+        std::array<uint8_t,3> carrier_color = {0, 0, 0}; // preto tb
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 const std::array<uint8_t,3>* colPtr = nullptr;
@@ -245,12 +245,10 @@ struct World {
             q.pop();
             vis[now.x][now.y] = true;
             if (!filled_map[now.x][now.y]) {
-                to.emplace_back(now);
-                continue;
+                return now;
             }
             for (int i = -RADIUS; i <= RADIUS; i++) {
                 for (int j = -RADIUS; j <= RADIUS; j++) {
-                    if (abs(i) + abs(j) > RADIUS) continue;
                     Coordinate cur = wrap(now.x + i, now.y + j);
                     if (!vis[cur.x][cur.y]) {
                         vis[cur.x][cur.y] = true;
@@ -259,9 +257,8 @@ struct World {
                 }
             }
         }
-
-        int rand = uniform(0, int(to.size() - 1));
-        return to[rand];
+        assert(false);
+        return Coordinate();
     }
 
     void endstep() {
