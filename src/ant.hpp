@@ -1,13 +1,9 @@
 #pragma once
 #include "coordinate.hpp"
 #include "data.hpp"
+#include "constants.hpp"
 #include <math.h>
 
-const double ALPHA = 35.8029;
-const double K1 = 0.03;
-const double K2 = 0.03;
-
-#define sq(x) ((x)*(x))
 
 struct Ant {
     Coordinate cord;

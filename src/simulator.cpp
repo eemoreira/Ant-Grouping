@@ -3,6 +3,7 @@
 #include "coordinate.hpp"
 #include "ant.hpp"
 #include "data.hpp"
+#include "constants.hpp"
 
 std::string normalizeNumber(const std::string &s) {
     std::string out = s;
@@ -58,7 +59,6 @@ void normalizeData(std::vector<Data>& dataset) {
     }
 }
 
-const int RADIUS = 1;
 
 struct World {
     int N, M;
@@ -130,7 +130,7 @@ struct World {
     void print(int step_number = -1) {
         std::string fname;
         if (step_number >= 0) fname = "res/step_" + std::to_string(step_number) + ".pgm";
-        else fname = "res/step_last.pgm";
+        else fname = "res/step_first.pgm";
 
         std::ofstream fout(fname, std::ios::binary);
         if (!fout) return;
@@ -282,6 +282,7 @@ struct World {
         }
 
         endstep();
+        print(STEPS);
     }
 };
 
