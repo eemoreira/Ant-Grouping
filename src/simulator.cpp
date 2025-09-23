@@ -145,26 +145,25 @@ struct World {
         // 4 -> data4
         // 5 -> empty
         std::vector<std::array<uint8_t,3>> palette = {
-            {  0,   0,   0}, // 0 ant   -> preto
-            {239,  71, 111}, // 1 data1 -> rosa/vermelho
-            {255, 209, 102}, // 2 data2 -> amarelo quente
-            {  6, 214, 160}, // 3 data3 -> verde água
-            { 17, 138, 178}, // 4 data4 -> azul petróleo
-            { 17, 138, 178}, // 4 data5 -> azul petróleo
-            { 17, 138, 178}, // 4 data6 -> azul petróleo
-            { 17, 138, 178}, // 4 data7 -> azul petróleo
-            { 17, 138, 178}, // 4 data8 -> azul petróleo
-            { 17, 138, 178}, // 4 data9 -> azul petróleo
-            { 17, 138, 178}, // 4 data10 -> azul petróleo
-            { 17, 138, 178}, // 4 data11 -> azul petróleo
-            { 17, 138, 178}, // 4 data12 -> azul petróleo
-            { 17, 138, 178}, // 4 data13 -> azul petróleo
-            { 17, 138, 178}, // 4 data14 -> azul petróleo
-            { 17, 138, 178}, // 4 data15 -> azul petróleo
-            {255, 255, 255}  // 5 empty -> branco
+            {  0,   0,   0}, // ant   -> preto
+            {164, 0  , 235}, // data1 -> azul petróleo
+            {240, 230, 0  }, // data2 -> amarelo quente
+            {0  , 154, 71 }, // data3 -> azul petróleo
+            {240, 37 , 1  }, // data4 -> azul petróleo
+            {197, 240, 125}, // data5 -> azul petróleo
+            {240, 179, 133}, // data6 -> rosa/vermelho
+            {179, 131, 0  }, // data7 -> verde água
+            {209, 0  , 209}, // data8 -> azul petróleo
+            {255, 132, 0  }, // data9 -> azul petróleo
+            {4  , 43 , 112}, // data10 -> azul petróleo
+            {72 , 0  , 194}, // data11 -> azul petróleo
+            {0  , 153, 209}, // data12 -> azul petróleo
+            {224, 0  , 100}, // data13 -> azul petróleo
+            {34 , 230, 0  }, // data14 -> azul petróleo
+            {130, 245, 242}, // data15 -> azul petróleo
+            {255, 255, 255}  // empty -> branco
         };
 
-        std::array<uint8_t,3> carrier_color = {0, 0, 0}; // preto tb
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 const std::array<uint8_t,3>* colPtr = nullptr;
@@ -176,8 +175,7 @@ struct World {
                     // garantir índice válido (se necessário, clipe)
                     colPtr = &palette[group];
                 } else if (ant_map[i][j]) {
-                    if (carrying_map[i][j]) colPtr = &carrier_color;
-                    else colPtr = &palette[0];
+                    colPtr = &palette[0];
                 } else {
                     colPtr = &palette[16];
                 }
@@ -299,10 +297,15 @@ struct World {
 
 signed main() {
 
-    std::vector<Data> dataset = readDataFile("res/Square1-DataSet-400itens.txt");
     //normalizeData(dataset);
-    World world(64, 64, 200, dataset);
-    world.simulate(2000000, 100000);
+#ifdef FIFTEEN
+    std::vector<Data> dataset = readDataFile("res/Square1-DataSet-600itens.txt");
+#elif FOUR
+    std::vector<Data> dataset = readDataFile("res/Square1-DataSet-400itens.txt");
+#endif
+    std::cerr << ALPHA << std::endl;
+    World world(N, N, ANT_NUMBER, dataset);
+    world.simulate(NUMBER_OF_STEPS, PRINT_EVERY);
 
     //World world(15, 15, 20, 50);
     //world.simulate(100000, 1000);

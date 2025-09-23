@@ -19,8 +19,13 @@ debug: $(SRC)
 	@echo "Running ./$(BIN) $(RUNARGS)"
 	./$(BIN) $(RUNARGS)
 
-release: $(SRC)
-	$(CXX) $(CXX_RELEASE_FLAGS) -o $(BIN) $(SRC)
+release-15: $(SRC)
+	$(CXX) $(CXX_RELEASE_FLAGS) -DFIFTEEN -o $(BIN) $(SRC)
+	@echo "Running ./$(BIN) $(RUNARGS)"
+	./$(BIN) $(RUNARGS)
+
+release-4: $(SRC)
+	$(CXX) $(CXX_RELEASE_FLAGS) -DFOUR -o $(BIN) $(SRC)
 	@echo "Running ./$(BIN) $(RUNARGS)"
 	./$(BIN) $(RUNARGS)
 
@@ -34,5 +39,8 @@ clean-res:
 plot:
 	python3 res/plot.py --anim
 
-work: clean-res release plot
+work-15: clean-res release-15 plot
+	-vlc res/animation.mp4
+
+work-4: clean-res release-4 plot
 	-vlc res/animation.mp4
