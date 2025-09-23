@@ -150,6 +150,17 @@ struct World {
             {255, 209, 102}, // 2 data2 -> amarelo quente
             {  6, 214, 160}, // 3 data3 -> verde água
             { 17, 138, 178}, // 4 data4 -> azul petróleo
+            { 17, 138, 178}, // 4 data5 -> azul petróleo
+            { 17, 138, 178}, // 4 data6 -> azul petróleo
+            { 17, 138, 178}, // 4 data7 -> azul petróleo
+            { 17, 138, 178}, // 4 data8 -> azul petróleo
+            { 17, 138, 178}, // 4 data9 -> azul petróleo
+            { 17, 138, 178}, // 4 data10 -> azul petróleo
+            { 17, 138, 178}, // 4 data11 -> azul petróleo
+            { 17, 138, 178}, // 4 data12 -> azul petróleo
+            { 17, 138, 178}, // 4 data13 -> azul petróleo
+            { 17, 138, 178}, // 4 data14 -> azul petróleo
+            { 17, 138, 178}, // 4 data15 -> azul petróleo
             {255, 255, 255}  // 5 empty -> branco
         };
 
@@ -168,7 +179,7 @@ struct World {
                     if (carrying_map[i][j]) colPtr = &carrier_color;
                     else colPtr = &palette[0];
                 } else {
-                    colPtr = &palette[5];
+                    colPtr = &palette[16];
                 }
 
                 fout.write(reinterpret_cast<const char*>(colPtr->data()), 3);
@@ -290,8 +301,8 @@ signed main() {
 
     std::vector<Data> dataset = readDataFile("res/Square1-DataSet-400itens.txt");
     //normalizeData(dataset);
-    World world(64, 64, 150, dataset);
-    world.simulate(20000000, 100000);
+    World world(64, 64, 200, dataset);
+    world.simulate(2000000, 100000);
 
     //World world(15, 15, 20, 50);
     //world.simulate(100000, 1000);

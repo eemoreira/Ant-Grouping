@@ -28,7 +28,7 @@ struct Ant {
             sum += std::max(0.0, 1.0 - data_to_compare.dist(d)/ALPHA);
         }
 
-        double ssq = sq(8);
+        double ssq = BOX_SIZE;
         return std::max<double>(0, 1.0/ssq * sum);
     }
 
