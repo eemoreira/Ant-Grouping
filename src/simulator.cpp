@@ -303,7 +303,6 @@ signed main() {
 #elif FOUR
     std::vector<Data> dataset = readDataFile("res/Square1-DataSet-400itens.txt");
 #endif
-    std::cerr << ALPHA << std::endl;
     World world(N, N, ANT_NUMBER, dataset);
     world.simulate(NUMBER_OF_STEPS, PRINT_EVERY);
 
