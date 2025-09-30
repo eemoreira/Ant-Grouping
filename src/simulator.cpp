@@ -138,29 +138,23 @@ struct World {
         // Header P6: width height maxval
         fout << "P6\n" << M << " " << N << "\n255\n";
 
-        // 0 -> ant (sem carregar)
-        // 1 -> data1
-        // 2 -> data2
-        // 3 -> data3
-        // 4 -> data4
-        // 5 -> empty
         std::vector<std::array<uint8_t,3>> palette = {
             {  0,   0,   0}, // ant   -> preto
-            {164, 0  , 235}, // data1 -> azul petróleo
-            {240, 230, 0  }, // data2 -> amarelo quente
-            {0  , 154, 71 }, // data3 -> azul petróleo
-            {240, 37 , 1  }, // data4 -> azul petróleo
-            {197, 240, 125}, // data5 -> azul petróleo
-            {240, 179, 133}, // data6 -> rosa/vermelho
-            {179, 131, 0  }, // data7 -> verde água
-            {209, 0  , 209}, // data8 -> azul petróleo
-            {255, 132, 0  }, // data9 -> azul petróleo
-            {4  , 43 , 112}, // data10 -> azul petróleo
-            {72 , 0  , 194}, // data11 -> azul petróleo
-            {0  , 153, 209}, // data12 -> azul petróleo
-            {224, 0  , 100}, // data13 -> azul petróleo
-            {34 , 230, 0  }, // data14 -> azul petróleo
-            {130, 245, 242}, // data15 -> azul petróleo
+            {164, 0  , 235}, // data1 
+            {240, 230, 0  }, // data2 
+            {0  , 154, 71 }, // data3 
+            {240, 37 , 1  }, // data4 
+            {197, 240, 125}, // data5 
+            {240, 179, 133}, // data6 
+            {179, 131, 0  }, // data7 
+            {209, 0  , 209}, // data8 
+            {255, 132, 0  }, // data9 
+            {4  , 43 , 112}, // data10 
+            {72 , 0  , 194}, // data11 
+            {0  , 153, 209}, // data12 
+            {224, 0  , 100}, // data13 
+            {34 , 230, 0  }, // data14 
+            {130, 245, 242}, // data15 
             {255, 255, 255}  // empty -> branco
         };
 
@@ -297,7 +291,6 @@ struct World {
 
 signed main() {
 
-    //normalizeData(dataset);
 #ifdef FIFTEEN
     std::vector<Data> dataset = readDataFile("res/Square1-DataSet-600itens.txt");
 #elif FOUR
@@ -306,7 +299,5 @@ signed main() {
     World world(N, N, ANT_NUMBER, dataset);
     world.simulate(NUMBER_OF_STEPS, PRINT_EVERY);
 
-    //World world(15, 15, 20, 50);
-    //world.simulate(100000, 1000);
 }
 

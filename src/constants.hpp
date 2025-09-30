@@ -20,8 +20,8 @@ const int RADIUS = 1;
 const int BOX_SIZE = (RADIUS + 2) * (RADIUS + 2);
 const int N = 80;
 const int ANT_NUMBER = 120;
-const int NUMBER_OF_STEPS = 2e6;
-const int PRINT_EVERY = 1e5;
+const int NUMBER_OF_STEPS = 2e7;
+const int PRINT_EVERY = 1e6;
 
 #endif
 
